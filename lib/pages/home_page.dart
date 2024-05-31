@@ -124,6 +124,29 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _robotsList() {
+    return _isRobotInitialized
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Available Robots',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: availableRobots.length,
+                  itemBuilder: (context, index) {
+                    return _buildRobotCard(availableRobots[index]);
+                  },
+                ),
+              ),
+            ],
+          )
+        : const SizedBox.shrink();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,6 +168,8 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _welcomeText(),
+              const SizedBox(height: 20),
+              _robotsList(),
               const Spacer(),
             ],
           ),
