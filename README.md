@@ -1,7 +1,8 @@
 # RemoteVision-receiver
 
 This is the RemoteVision receiver app aimed to provide an interface to my arduino-anrdoid robot.
-Functionality:
+
+## Functionality:
 
 - Authentication
 - Connect to robot(serial communication for remote controll)
