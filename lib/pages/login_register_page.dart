@@ -15,6 +15,7 @@ class _LoginPageState extends State<LoginPage> {
 
   final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerPassword = TextEditingController();
+  final TextEditingController _controllerUsername = TextEditingController();
 
   Future<void> signInWithUserEmailAndPassword() async {
     try {
@@ -32,7 +33,10 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> createUserWithEmailAndPassword() async {
     try {
       await Auth().createUserWithEmailAndPassword(
-          email: _controllerEmail.text, password: _controllerPassword.text);
+        email: _controllerEmail.text,
+        password: _controllerPassword.text,
+        username: _controllerUsername.text,
+      );
     } on FirebaseAuthException catch (e) {
       setState(() {
         errorMessage = e.message;
@@ -96,6 +100,7 @@ class _LoginPageState extends State<LoginPage> {
           children: <Widget>[
             _entryField('email', _controllerEmail),
             _entryField('password', _controllerPassword),
+            if (!isLogin) _entryField('Username', _controllerUsername),
             _errorMessage(),
             _submitButton(),
             _loginOrRegisterButton(),

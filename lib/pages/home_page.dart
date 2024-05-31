@@ -2,10 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:remotevision/auth.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   HomePage({super.key});
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   final User? user = Auth().currentuser;
+
+  String? username;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsername();
+  }
+
+  Future<void> _loadUsername() async {
+    String? fetchedUsername = await Auth().getUsername();
+    setState(() {
+      username = fetchedUsername;
+    });
+  }
 
   Future<void> signOut() async {
     await Auth().signOut();
@@ -28,7 +48,7 @@ class HomePage extends StatelessWidget {
 
   Widget _welcomeText() {
     return Text(
-      'Welcome, ${user?.email ?? 'User'}!',
+      'Welcome, $username!',
       style: const TextStyle(fontSize: 18),
     );
   }
