@@ -73,12 +73,12 @@ class _HomePageState extends State<HomePage> {
         fontSize: 16.0,
       );
     }
+  }
 
-    @override
-    void dispose() {
-      robot.closePort();
-      super.dispose();
-    }
+  @override
+  void dispose() {
+    robot.closePort();
+    super.dispose();
   }
 
   Future<void> _loadUsername() async {
@@ -134,13 +134,13 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: availableRobots.length,
-                  itemBuilder: (context, index) {
-                    return _buildRobotCard(availableRobots[index]);
-                  },
-                ),
+              ListView.builder(
+                shrinkWrap:
+                    true, // Ensures the ListView doesn't take infinite height
+                itemCount: availableRobots.length,
+                itemBuilder: (context, index) {
+                  return _buildRobotCard(availableRobots[index]);
+                },
               ),
             ],
           )
@@ -150,29 +150,30 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _title(),
-              _signOutButton(),
-            ],
-          ),
+      appBar: AppBar(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _title(),
+            _signOutButton(),
+          ],
         ),
-        body: Container(
-          height: double.infinity,
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _welcomeText(),
-              const SizedBox(height: 20),
-              _robotsList(),
-              const Spacer(),
-            ],
-          ),
-        ));
+      ),
+      body: Container(
+        height: double.infinity,
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            _welcomeText(),
+            const SizedBox(height: 20),
+            _robotsList(),
+            const Spacer(),
+          ],
+        ),
+      ),
+    );
   }
 }

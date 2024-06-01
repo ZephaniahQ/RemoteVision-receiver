@@ -36,43 +36,34 @@ class Robot {
     return false;
   }
 
-  Future<String?> requestRobotName() async {
-    if (!_isInitialized) {
-      _logger.e('Serial port not initialized');
-      return null;
-    }
-
+  Future<String?> requestName() async {
     try {
-      // Send connection request
-      Uint8List requestData = Uint8List.fromList('REQUEST_NAME\n'.codeUnits);
-      await _port.write(requestData);
-
-      // Read response from the robot
-      Completer<String> completer = Completer<String>();
-      List<int> responseBuffer = [];
-
-      _port.inputStream?.listen((Uint8List data) {
-        responseBuffer.addAll(data);
-        // Assuming the robot sends a newline character at the end of the name
-        if (data.contains(10)) {
-          // 10 is the ASCII code for newline
-          String response = String.fromCharCodes(responseBuffer);
-          completer.complete(response.trim());
-        }
-      });
-
-      String response = await completer.future;
-      _logger.d('Received response: $response');
-      return response;
+      // Send 'N' character to request the robot's name
+      await sendSerial('N');
+      // Read the response
+      Uint8List data = (await _port.inputStream!.toList()).first;
+      String name = String.fromCharCodes(data);
+      _logger.d('Received robot name: $name');
+      return name.trim();
     } catch (e) {
       _logger.e('Failed to request robot name: $e');
       return null;
     }
   }
 
+  Future<void> sendSerial(String message) async {
+    try {
+      Uint8List data = Uint8List.fromList(message.codeUnits);
+      await _port.write(data);
+      _logger.d('Message sent: $message');
+    } catch (e) {
+      _logger.e('Failed to send message');
+    }
+  }
+
   Future<String?> initializeAndRequestName() async {
     if (await initialize()) {
-      return await requestRobotName();
+      return await requestName();
     }
     return null;
   }
