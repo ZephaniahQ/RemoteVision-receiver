@@ -17,7 +17,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late Robot robot;
   bool _isRobotInitialized = false;
-  String _robotName = '';
   List<String> availableRobots = [];
 
   final User? user = Auth().currentuser;
@@ -28,51 +27,44 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     robot = Robot();
-    _checkForRobots();
     _loadUsername();
+    _initAsync();
   }
 
-  Future<void> _checkForRobots() async {
-    try {
-      String? robotName = await robot.initializeAndRequestName();
-      if (robotName != null) {
-        setState(() {
-          _robotName = robotName;
-          availableRobots.add(robotName);
-          _isRobotInitialized = true;
-        });
-        Fluttertoast.showToast(
-          msg: 'Robot initialized successfully with name $robotName',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.blue,
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
-      } else {
-        Fluttertoast.showToast(
-          msg: 'Failed to get robot name',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
-      }
-    } catch (e) {
-      _logger.e('Failed to initialize and request robot name: $e');
-      Fluttertoast.showToast(
-        msg: 'Failed to initialize and request robot name: $e',
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
-    }
+  Future<void> _initAsync() async {
+    _isRobotInitialized =
+        await robot.initialize(onConnectionLost: _handleConnectionLost);
+  }
+
+  void _handleConnectionLost() {
+    setState(() {
+      _isRobotInitialized = false;
+    });
+    Fluttertoast.showToast(
+      msg: 'Robot disconnected',
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+  }
+
+  Widget _reInitButton() {
+    return ElevatedButton(
+        onPressed: () async {
+          robot.initialize();
+        },
+        child: const Text('Re-init'));
+  }
+
+  Widget _testButton() {
+    return ElevatedButton(
+        onPressed: () async {
+          robot.testOutput();
+        },
+        child: const Text('Test'));
   }
 
   @override
@@ -114,37 +106,28 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildRobotCard(String robotName) {
-    return Card(
-      child: ListTile(
-        title: Text(robotName),
-        subtitle: Text('Connected Robot'),
-        trailing: Icon(Icons.smart_toy),
-      ),
-    );
+  Widget _robotStatus() {
+    if (_isRobotInitialized) {
+      return const Text("Robot is online",
+          style: TextStyle(color: Colors.green));
+    }
+    return const Text("Robot is offline", style: TextStyle(color: Colors.red));
   }
 
-  Widget _robotsList() {
-    return _isRobotInitialized
-        ? Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Available Robots',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              ListView.builder(
-                shrinkWrap:
-                    true, // Ensures the ListView doesn't take infinite height
-                itemCount: availableRobots.length,
-                itemBuilder: (context, index) {
-                  return _buildRobotCard(availableRobots[index]);
-                },
-              ),
+  Widget _botControls() {
+    return Center(
+      child: Column(
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              _reInitButton(),
+              _testButton(),
             ],
           )
-        : const SizedBox.shrink();
+        ],
+      ),
+    );
   }
 
   @override
@@ -167,9 +150,11 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            _welcomeText(),
-            const SizedBox(height: 20),
-            _robotsList(),
+            const Spacer(),
+            if (username != null) _welcomeText(),
+            _robotStatus(),
+            const Spacer(),
+            _botControls(),
             const Spacer(),
           ],
         ),
