@@ -44,7 +44,8 @@ class Robot {
   }
 
   void _startConnectionCheckTimer() {
-    _connectionCheckTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
+    _connectionCheckTimer =
+        Timer.periodic(const Duration(seconds: 5), (timer) async {
       if (!await _isConnectionActive()) {
         _isInitialized = false;
         _logger.e('Connection lost');
