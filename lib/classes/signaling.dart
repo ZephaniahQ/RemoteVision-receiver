@@ -131,8 +131,13 @@ class Signaling {
 
   Future<void> openUserMedia(
       RTCVideoRenderer localVideo, RTCVideoRenderer remoteVideo) async {
-    var stream = await navigator.mediaDevices
-        .getUserMedia({'video': true, 'audio': true});
+    final Map<String, dynamic> mediaConstraints = {
+      'audio': true,
+      'video': {
+        'facingMode': 'environment' // Use 'user' for front camera
+      }
+    };
+    var stream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
     localVideo.srcObject = stream;
     localStream = stream;
     remoteVideo.srcObject = await createLocalMediaStream('key');
