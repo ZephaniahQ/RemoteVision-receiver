@@ -18,6 +18,7 @@ class Signaling {
   RTCPeerConnection? peerConnection;
   MediaStream? localStream;
   MediaStream? remoteStream;
+  RTCDataChannel? dataChannel;
   String? roomId;
   String? currentRoomText;
   StreamStateCallback? onAddRemoteStream;
@@ -63,6 +64,8 @@ class Signaling {
       }
     });
 
+    await createDataChannel();
+
     // Listen for remote ICE candidates
     roomRef.collection('calleeCandidates').snapshots().listen((snapshot) {
       for (var change in snapshot.docChanges) {
@@ -78,6 +81,26 @@ class Signaling {
     });
 
     return roomId;
+  }
+
+  Future<void> createDataChannel() async {
+    // Create data channel for text streaming
+    dataChannel = await peerConnection?.createDataChannel(
+        "textChannel", RTCDataChannelInit());
+    dataChannel?.onDataChannelState = (state) {
+      print("Data channel state: $state");
+    };
+
+    // Register data channel listener
+    dataChannel?.onDataChannelState = (RTCDataChannelState state) {
+      print('Data channel state changed: $state');
+    };
+
+    // Optionally, handle data channel messages
+    dataChannel?.onMessage = (RTCDataChannelMessage message) {
+      print('Received message: ${message.text}');
+      // Handle received text message
+    };
   }
 
   Future<void> joinRoom(String roomId, RTCVideoRenderer remoteRenderer) async {
@@ -196,5 +219,11 @@ class Signaling {
       onAddRemoteStream?.call(stream);
       remoteStream = stream;
     };
+  }
+
+  void sendText(String text) {
+    if (dataChannel != null) {
+      dataChannel?.send(RTCDataChannelMessage(text));
+    }
   }
 }
